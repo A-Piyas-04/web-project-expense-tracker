@@ -24,10 +24,68 @@ A full-stack web app for university students to log daily spending, set monthly 
 
 ```
 web-project/
-├── Docs/                   # Planning and workflow documents
-├── frontend/               # React app (scaffolded)
+├── README.md
+├── Docs/
+│   ├── expense-tracker-dev-plan.md
+│   └── expense-tracker-workflow-plan.md
+├── frontend/
+│   ├── .env.example
+│   ├── .gitignore
+│   ├── index.html
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   ├── vite.config.js
+│   └── src/
+│       ├── main.jsx
+│       ├── App.jsx
+│       ├── index.css
+│       ├── api/
+│       │   ├── client.js
+│       │   ├── auth.js
+│       │   ├── expenses.js
+│       │   ├── categories.js
+│       │   ├── budgets.js
+│       │   └── analytics.js
+│       ├── components/
+│       │   ├── layout/
+│       │   │   ├── Layout.jsx
+│       │   │   ├── Navbar.jsx
+│       │   │   └── ProtectedRoute.jsx
+│       │   ├── common/
+│       │   │   ├── Button.jsx
+│       │   │   ├── Input.jsx
+│       │   │   ├── LoadingSpinner.jsx
+│       │   │   └── OverspendBanner.jsx
+│       │   ├── expenses/
+│       │   │   ├── ExpenseForm.jsx
+│       │   │   ├── ExpenseList.jsx
+│       │   │   └── ExpenseItem.jsx
+│       │   ├── budgets/
+│       │   │   ├── BudgetForm.jsx
+│       │   │   └── BudgetList.jsx
+│       │   └── analytics/
+│       │       ├── CategoryPieChart.jsx
+│       │       ├── CategoryBarChart.jsx
+│       │       └── MonthlyLineChart.jsx
+│       ├── context/
+│       │   └── AuthContext.jsx
+│       ├── hooks/
+│       │   └── useAuth.js
+│       ├── pages/
+│       │   ├── LoginPage.jsx
+│       │   ├── RegisterPage.jsx
+│       │   ├── DashboardPage.jsx
+│       │   └── ExpensesPage.jsx
+│       ├── routes/
+│       │   └── AppRoutes.jsx
+│       └── utils/
+│           ├── constants.js
+│           └── formatters.js
 └── backend/                # FastAPI app (not yet scaffolded)
 ```
+
+> `node_modules/`, `dist/`, and `.env` are gitignored and not shown above.
 
 ---
 
@@ -65,21 +123,6 @@ VITE_API_BASE_URL=http://localhost:8000
 | `npm run dev` | Start dev server |
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build |
-
----
-
-## Frontend Structure
-
-```
-frontend/src/
-├── api/              # API client stubs
-├── components/       # UI components (layout, expenses, budgets, analytics)
-├── context/          # Auth context
-├── hooks/            # Custom hooks
-├── pages/            # Route pages (Login, Register, Dashboard, Expenses)
-├── routes/           # Route definitions
-└── utils/            # Constants and helpers
-```
 
 The frontend is currently a **scaffold with placeholders** — routes and components exist but business logic is not yet implemented.
 
