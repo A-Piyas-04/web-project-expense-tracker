@@ -14,8 +14,8 @@ A full-stack web app for university students to log daily spending, set monthly 
 | Layer | Technology |
 |---|---|
 | **Frontend** | React, Vite, Tailwind CSS, Recharts, Axios |
-| **Backend** | Python, FastAPI, SQLAlchemy, Alembic *(planned)* |
-| **Database** | PostgreSQL *(planned)* |
+| **Backend** | Python, FastAPI, SQLAlchemy, Alembic |
+| **Database** | PostgreSQL |
 | **Auth** | JWT |
 
 ---
@@ -82,18 +82,51 @@ web-project/
 │       └── utils/
 │           ├── constants.js
 │           └── formatters.js
-└── backend/                # FastAPI app (not yet scaffolded)
+└── backend/
+    ├── .env.example
+    ├── .gitignore
+    ├── requirements.txt
+    ├── alembic.ini
+    ├── alembic/
+    │   ├── env.py
+    │   └── versions/
+    └── app/
+        ├── main.py
+        ├── config.py
+        ├── database.py
+        ├── dependencies.py
+        ├── models/
+        │   ├── user.py
+        │   ├── category.py
+        │   ├── expense.py
+        │   └── budget.py
+        ├── schemas/
+        │   ├── auth.py
+        │   ├── user.py
+        │   ├── category.py
+        │   ├── expense.py
+        │   ├── budget.py
+        │   └── analytics.py
+        ├── routers/
+        │   ├── auth.py
+        │   ├── expenses.py
+        │   ├── categories.py
+        │   ├── budgets.py
+        │   └── analytics.py
+        └── utils/
+            ├── security.py
+            └── seed.py
 ```
 
-> `node_modules/`, `dist/`, and `.env` are gitignored and not shown above.
+> `node_modules/`, `dist/`, `venv/`, and `.env` are gitignored and not shown above.
 
 ---
 
 ## Prerequisites
 
 - **Node.js** 18+ (for frontend)
-- **Python** 3.10+ (for backend, when added)
-- **PostgreSQL** (for backend, when added)
+- **Python** 3.10+ (for backend)
+- **PostgreSQL** (for backend)
 
 ---
 
@@ -125,6 +158,49 @@ VITE_API_BASE_URL=http://localhost:8000
 | `npm run preview` | Preview production build |
 
 The frontend is currently a **scaffold with placeholders** — routes and components exist but business logic is not yet implemented.
+
+---
+
+## Getting Started — Backend
+
+```bash
+cd backend
+python -m venv venv
+
+# Windows
+.\venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload
+```
+
+The API runs at [http://localhost:8000](http://localhost:8000). Interactive docs at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+### Environment Variables
+
+Copy `backend/.env.example` to `backend/.env` and adjust as needed:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/expense_tracker
+SECRET_KEY=change-me-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+CORS_ORIGINS=http://localhost:5173
+```
+
+### Database Migrations
+
+```bash
+# After models are finalized
+alembic revision --autogenerate -m "initial migration"
+alembic upgrade head
+```
+
+The backend is currently a **scaffold with placeholders** — routes, models, and schemas exist but business logic is not yet implemented.
 
 ---
 
