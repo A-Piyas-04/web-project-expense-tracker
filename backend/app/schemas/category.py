@@ -1,7 +1,5 @@
 from pydantic import BaseModel
 
-# TODO: define CategoryCreate and CategoryRead schemas
-
 
 class CategoryRead(BaseModel):
     id: int

@@ -1,7 +1,5 @@
 from pydantic import BaseModel, EmailStr
 
-# TODO: define request/response schemas for register, login, and token
-
 
 class UserRegister(BaseModel):
     email: EmailStr

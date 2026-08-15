@@ -3,8 +3,6 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
-# TODO: define ExpenseCreate, ExpenseUpdate, and ExpenseRead schemas
-
 
 class ExpenseCreate(BaseModel):
     category_id: int
