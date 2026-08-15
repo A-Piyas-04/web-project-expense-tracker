@@ -1,8 +1,13 @@
 import client from './client';
 
 export const expensesApi = {
-  getAll: async () => {
-    const response = await client.get('/expenses/');
+  getAll: async (filters = {}) => {
+    const params = {};
+    if (filters.categoryId) params.category_id = filters.categoryId;
+    if (filters.startDate) params.start_date = filters.startDate;
+    if (filters.endDate) params.end_date = filters.endDate;
+
+    const response = await client.get('/expenses/', { params });
     return response.data;
   },
   create: async (expense) => {
