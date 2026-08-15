@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -25,15 +27,22 @@ def _validate_category(db: Session, category_id: int) -> None:
 
 @router.get("/", response_model=list[ExpenseRead])
 def list_expenses(
+    category_id: int | None = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return (
-        db.query(Expense)
-        .filter(Expense.user_id == current_user.id)
-        .order_by(Expense.date.desc(), Expense.id.desc())
-        .all()
-    )
+    query = db.query(Expense).filter(Expense.user_id == current_user.id)
+
+    if category_id is not None:
+        query = query.filter(Expense.category_id == category_id)
+    if start_date is not None:
+        query = query.filter(Expense.date >= start_date)
+    if end_date is not None:
+        query = query.filter(Expense.date <= end_date)
+
+    return query.order_by(Expense.date.desc(), Expense.id.desc()).all()
 
 
 @router.post("/", response_model=ExpenseRead, status_code=status.HTTP_201_CREATED)

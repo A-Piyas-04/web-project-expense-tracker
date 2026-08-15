@@ -2,8 +2,6 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
-# TODO: define BudgetCreate, BudgetUpdate, and BudgetRead schemas (include overspend warning flag)
-
 
 class BudgetCreate(BaseModel):
     category_id: int
@@ -13,6 +11,9 @@ class BudgetCreate(BaseModel):
 class BudgetRead(BaseModel):
     id: int
     category_id: int
+    category_name: str
     monthly_limit: Decimal
+    spent: Decimal
+    is_over_budget: bool
 
     model_config = {"from_attributes": True}
