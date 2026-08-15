@@ -1,6 +1,8 @@
 import client from './client';
 
-// TODO: implement category API calls
 export const categoriesApi = {
-  getAll: async () => {},
+  getAll: async () => {
+    const response = await client.get('/categories/');
+    return response.data;
+  },
 };

@@ -1,7 +1,16 @@
 import client from './client';
 
-// TODO: implement auth API calls
 export const authApi = {
-  login: async () => {},
-  register: async () => {},
+  login: async (email, password) => {
+    const response = await client.post('/auth/login', { email, password });
+    return response.data;
+  },
+  register: async (email, password) => {
+    const response = await client.post('/auth/register', { email, password });
+    return response.data;
+  },
+  getMe: async () => {
+    const response = await client.get('/auth/me');
+    return response.data;
+  },
 };
