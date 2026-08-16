@@ -1,22 +1,38 @@
 import ExpenseItem from './ExpenseItem';
+import { colors, layout } from '../../theme';
 
 export default function ExpenseList({ expenses, categories, onEdit, onDelete }) {
-  const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
+  const categoryNameById = new Map(
+    categories.map((category) => [category.id, category.name]),
+  );
 
   if (expenses.length === 0) {
-    return <p className="rounded-md border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">No expenses yet.</p>;
+    return (
+      <p
+        style={{
+          maxWidth: '800px',
+          margin: '8px 0 0 0',
+          padding: '8px 0',
+          color: colors.muted,
+          fontSize: '14px',
+          fontStyle: 'italic',
+        }}
+      >
+        No expenses yet. Add one to start tracking.
+      </p>
+    );
   }
 
   return (
-    <div className="overflow-x-auto rounded-md border border-slate-200 bg-white">
-      <table className="w-full">
+    <div style={{ ...layout.panel, maxWidth: '800px', overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
         <thead>
-          <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
-            <th className="py-2 pl-4 pr-4 font-medium">Date</th>
-            <th className="py-2 pr-4 font-medium">Category</th>
-            <th className="py-2 pr-4 font-medium">Description</th>
-            <th className="py-2 pr-4 text-right font-medium">Amount</th>
-            <th className="py-2 pr-4"></th>
+          <tr style={{ textAlign: 'left' }}>
+            <th style={thStyle}>Date</th>
+            <th style={thStyle}>Category</th>
+            <th style={thStyle}>Description</th>
+            <th style={{ ...thStyle, textAlign: 'right' }}>Amount</th>
+            <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -34,3 +50,10 @@ export default function ExpenseList({ expenses, categories, onEdit, onDelete }) 
     </div>
   );
 }
+
+const thStyle = {
+  ...layout.label,
+  padding: '0 12px 10px 0',
+  borderBottom: `2px solid ${colors.teal}`,
+  marginBottom: 0,
+};
