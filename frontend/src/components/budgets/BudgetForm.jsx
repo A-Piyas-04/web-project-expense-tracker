@@ -1,13 +1,34 @@
 import { useEffect, useState } from 'react';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import { colors, layout } from '../../theme';
 
-const EMPTY_FORM = { categoryId: '', monthlyLimit: '' };
+const EMPTY_FORM = {
+  categoryId: '',
+  monthlyLimit: '',
+};
 
 function toFormState(budget) {
-  if (!budget) return EMPTY_FORM;
-  return { categoryId: String(budget.category_id), monthlyLimit: String(budget.monthly_limit) };
+  if (!budget) {
+    return EMPTY_FORM;
+  }
+
+  return {
+    categoryId: String(budget.category_id),
+    monthlyLimit: String(budget.monthly_limit),
+  };
 }
+
+const selectStyle = {
+  width: '100%',
+  padding: '10px 0',
+  border: 'none',
+  borderBottom: `1px solid ${colors.rule}`,
+  borderRadius: 0,
+  fontSize: '14px',
+  color: colors.text,
+  backgroundColor: 'transparent',
+};
 
 export default function BudgetForm({ categories, initialBudget, onSubmit, onCancel }) {
   const [form, setForm] = useState(() => toFormState(initialBudget));
@@ -21,7 +42,12 @@ export default function BudgetForm({ categories, initialBudget, onSubmit, onCanc
   }, [initialBudget]);
 
   function updateField(field) {
-    return (event) => setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    return (event) => {
+      setForm((prev) => ({
+        ...prev,
+        [field]: event.target.value,
+      }));
+    };
   }
 
   async function handleSubmit(event) {
@@ -29,6 +55,7 @@ export default function BudgetForm({ categories, initialBudget, onSubmit, onCanc
     setError('');
 
     const monthlyLimit = Number(form.monthlyLimit);
+
     if (!form.categoryId) {
       setError('Choose a category.');
       return;
@@ -39,9 +66,16 @@ export default function BudgetForm({ categories, initialBudget, onSubmit, onCanc
     }
 
     setIsSubmitting(true);
+
     try {
-      await onSubmit({ category_id: Number(form.categoryId), monthly_limit: monthlyLimit });
-      if (!isEditing) setForm(EMPTY_FORM);
+      await onSubmit({
+        category_id: Number(form.categoryId),
+        monthly_limit: monthlyLimit,
+      });
+
+      if (!isEditing) {
+        setForm(EMPTY_FORM);
+      }
     } catch (err) {
       setError(err.response?.data?.detail ?? 'Could not save this budget.');
     } finally {
@@ -50,19 +84,28 @@ export default function BudgetForm({ categories, initialBudget, onSubmit, onCanc
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-md border border-slate-200 bg-white p-4">
-      <h2 className="text-lg font-semibold text-slate-900">{isEditing ? 'Edit Budget' : 'Set a Budget'}</h2>
+    <form onSubmit={handleSubmit} style={{ ...layout.panelStrong, maxWidth: '640px' }}>
+      <h2 style={layout.sectionTitle}>{isEditing ? 'Edit budget' : 'Set a budget'}</h2>
+      <p style={layout.sectionHint}>Choose a category and a monthly spending limit.</p>
+      <hr style={layout.hairline} />
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="budget-category" className="text-sm font-medium text-slate-700">
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '20px',
+          marginBottom: '20px',
+        }}
+      >
+        <div>
+          <label htmlFor="budget-category" style={layout.label}>
             Category
           </label>
           <select
             id="budget-category"
             value={form.categoryId}
             onChange={updateField('categoryId')}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+            style={selectStyle}
           >
             <option value="">Select a category</option>
             {categories.map((category) => (
@@ -78,17 +121,24 @@ export default function BudgetForm({ categories, initialBudget, onSubmit, onCanc
           type="number"
           step="0.01"
           min="0"
-          label="Monthly Limit"
+          label="Monthly limit"
           value={form.monthlyLimit}
           onChange={updateField('monthlyLimit')}
+          style={{
+            border: 'none',
+            borderBottom: `1px solid ${colors.rule}`,
+            borderRadius: 0,
+            backgroundColor: 'transparent',
+            padding: '10px 0',
+          }}
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p style={layout.errorText}>{error}</p>}
 
-      <div className="flex gap-2">
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving…' : isEditing ? 'Save Changes' : 'Set Budget'}
+          {isSubmitting ? 'Saving…' : isEditing ? 'Save changes' : 'Set budget'}
         </Button>
         {isEditing && (
           <Button type="button" variant="secondary" onClick={onCancel}>

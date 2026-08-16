@@ -1,32 +1,88 @@
 import Button from '../common/Button';
 import { formatCurrency } from '../../utils/formatters';
+import { colors, layout } from '../../theme';
 
 export default function BudgetList({ budgets, onEdit, onDelete }) {
   if (budgets.length === 0) {
     return (
-      <p className="rounded-md border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-        No budgets set yet.
+      <p
+        style={{
+          maxWidth: '720px',
+          margin: '8px 0 0 0',
+          color: colors.muted,
+          fontSize: '14px',
+          fontStyle: 'italic',
+        }}
+      >
+        No budgets set yet. Add one above to get overspend warnings.
       </p>
     );
   }
 
   return (
-    <ul className="space-y-2">
-      {budgets.map((budget) => {
-        const percent = Math.min(100, Math.round((Number(budget.spent) / Number(budget.monthly_limit)) * 100));
+    <ul
+      style={{
+        ...layout.panel,
+        listStyle: 'none',
+        margin: 0,
+        maxWidth: '720px',
+        padding: '4px 18px',
+      }}
+    >
+      {budgets.map((budget, index) => {
+        const spent = Number(budget.spent);
+        const limit = Number(budget.monthly_limit);
+        const percent = Math.min(100, Math.round((spent / limit) * 100));
+        const barColor = budget.is_over_budget ? colors.red : colors.teal;
+
         return (
-          <li key={budget.id} className="rounded-md border border-slate-200 bg-white p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="font-medium text-slate-900">{budget.category_name}</p>
-                <p className="text-sm text-slate-600">
-                  {formatCurrency(budget.spent)} of {formatCurrency(budget.monthly_limit)}
+          <li
+            key={budget.id}
+            style={{
+              padding: '18px 0',
+              borderTop: index === 0 ? `1px solid ${colors.rule}` : 'none',
+              borderBottom: `1px solid ${colors.rule}`,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: '12px',
+                flexWrap: 'wrap',
+                alignItems: 'flex-start',
+              }}
+            >
+              <div style={{ flex: 1, minWidth: '180px' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+                  <p style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: colors.text }}>
+                    {budget.category_name}
+                  </p>
                   {budget.is_over_budget && (
-                    <span className="ml-2 rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Over budget</span>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color: colors.red,
+                      }}
+                    >
+                      Over budget
+                    </span>
                   )}
+                </div>
+                <p style={{ margin: '6px 0 0 0', fontSize: '14px', color: colors.muted }}>
+                  <span style={{ color: colors.text, fontWeight: '600' }}>
+                    {formatCurrency(spent)}
+                  </span>
+                  {' of '}
+                  {formatCurrency(limit)}
+                  <span style={{ marginLeft: '10px', color: colors.muted }}>{percent}%</span>
                 </p>
               </div>
-              <div className="flex gap-2">
+
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <Button type="button" variant="secondary" onClick={() => onEdit(budget)}>
                   Edit
                 </Button>
@@ -35,10 +91,21 @@ export default function BudgetList({ budgets, onEdit, onDelete }) {
                 </Button>
               </div>
             </div>
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+
+            <div
+              style={{
+                marginTop: '14px',
+                height: '2px',
+                width: '100%',
+                backgroundColor: colors.rule,
+              }}
+            >
               <div
-                className={`h-full rounded-full ${budget.is_over_budget ? 'bg-red-500' : 'bg-slate-900'}`}
-                style={{ width: `${percent}%` }}
+                style={{
+                  height: '100%',
+                  width: `${percent}%`,
+                  backgroundColor: barColor,
+                }}
               />
             </div>
           </li>
