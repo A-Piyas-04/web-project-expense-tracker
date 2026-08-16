@@ -1,14 +1,59 @@
-const VARIANTS = {
-  primary: 'bg-slate-900 text-white hover:bg-slate-700',
-  secondary: 'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50',
-  danger: 'bg-red-600 text-white hover:bg-red-500',
+import { colors } from '../../theme';
+
+const baseStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '10px 16px',
+  borderRadius: '2px',
+  border: 'none',
+  fontSize: '14px',
+  fontWeight: '600',
+  cursor: 'pointer',
 };
 
-export default function Button({ children, type = 'button', variant = 'primary', className = '', ...props }) {
+const variants = {
+  primary: {
+    backgroundColor: colors.teal,
+    color: colors.white,
+  },
+  secondary: {
+    backgroundColor: colors.white,
+    color: colors.teal,
+    border: `2px solid ${colors.teal}`,
+  },
+  danger: {
+    backgroundColor: colors.red,
+    color: colors.white,
+  },
+  ghost: {
+    backgroundColor: 'transparent',
+    color: colors.muted,
+    border: `1px solid ${colors.border}`,
+  },
+};
+
+export default function Button({
+  children,
+  type = 'button',
+  variant = 'primary',
+  style = {},
+  disabled = false,
+  ...props
+}) {
+  const variantStyle = variants[variant] || variants.primary;
+
   return (
     <button
       type={type}
-      className={`rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
+      disabled={disabled}
+      style={{
+        ...baseStyle,
+        ...variantStyle,
+        opacity: disabled ? 0.55 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        ...style,
+      }}
       {...props}
     >
       {children}

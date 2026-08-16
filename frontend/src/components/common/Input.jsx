@@ -1,19 +1,29 @@
-export default function Input({ label, id, error, className = '', ...props }) {
+import { colors, layout } from '../../theme';
+
+export default function Input({ label, id, error, style = {}, ...props }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-slate-700">
+        <label htmlFor={id} style={layout.label}>
           {label}
         </label>
       )}
       <input
         id={id}
-        className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 ${
-          error ? 'border-red-500' : 'border-slate-300'
-        } ${className}`}
+        style={{
+          width: '100%',
+          boxSizing: 'border-box',
+          padding: '10px 12px',
+          borderRadius: '4px',
+          border: `1px solid ${error ? colors.red : colors.border}`,
+          fontSize: '14px',
+          color: colors.text,
+          backgroundColor: colors.white,
+          ...style,
+        }}
         {...props}
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p style={{ margin: 0, fontSize: '13px', color: colors.red }}>{error}</p>}
     </div>
   );
 }
