@@ -8,8 +8,24 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import { categoriesApi } from '../api/categories';
 import { expensesApi } from '../api/expenses';
 import { budgetsApi } from '../api/budgets';
+import { colors, layout } from '../theme';
 
-const EMPTY_FILTERS = { categoryId: '', startDate: '', endDate: '' };
+const EMPTY_FILTERS = {
+  categoryId: '',
+  startDate: '',
+  endDate: '',
+};
+
+const fieldStyle = {
+  width: '100%',
+  padding: '10px 0',
+  border: 'none',
+  borderBottom: `1px solid ${colors.rule}`,
+  borderRadius: 0,
+  fontSize: '14px',
+  color: colors.text,
+  backgroundColor: 'transparent',
+};
 
 export default function ExpensesPage() {
   const [categories, setCategories] = useState([]);
@@ -21,6 +37,7 @@ export default function ExpensesPage() {
   const [editingExpense, setEditingExpense] = useState(null);
   const [editingBudget, setEditingBudget] = useState(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [activeView, setActiveView] = useState('add');
 
   async function loadExpenses(activeFilters = filters) {
     const data = await expensesApi.getAll(activeFilters);
@@ -49,6 +66,7 @@ export default function ExpensesPage() {
         setIsLoading(false);
       }
     }
+
     loadAll();
   }, []);
 
@@ -64,13 +82,22 @@ export default function ExpensesPage() {
     } else {
       await expensesApi.create(payload);
     }
+
     await Promise.all([loadExpenses(), loadBudgets()]);
   }
 
   async function handleExpenseDelete(expense) {
-    if (!window.confirm(`Delete this ${expense.description || 'expense'}?`)) return;
+    const label = expense.description || 'expense';
+    if (!window.confirm(`Delete this ${label}?`)) {
+      return;
+    }
+
     await expensesApi.remove(expense.id);
-    if (editingExpense?.id === expense.id) setEditingExpense(null);
+
+    if (editingExpense?.id === expense.id) {
+      setEditingExpense(null);
+    }
+
     await Promise.all([loadExpenses(), loadBudgets()]);
   }
 
@@ -81,101 +108,249 @@ export default function ExpensesPage() {
     } else {
       await budgetsApi.create(payload);
     }
+
     await loadBudgets();
   }
 
   async function handleBudgetDelete(budget) {
-    if (!window.confirm(`Delete the budget for ${budget.category_name}?`)) return;
+    if (!window.confirm(`Delete the budget for ${budget.category_name}?`)) {
+      return;
+    }
+
     await budgetsApi.remove(budget.id);
-    if (editingBudget?.id === budget.id) setEditingBudget(null);
+
+    if (editingBudget?.id === budget.id) {
+      setEditingBudget(null);
+    }
+
     await loadBudgets();
   }
 
-  if (isLoading) return <LoadingSpinner />;
+  function handleEditExpense(expense) {
+    setEditingExpense(expense);
+    setActiveView('add');
+  }
+
+  function handleEditBudget(budget) {
+    setEditingBudget(budget);
+    setActiveView('budgets');
+  }
+
+  const hasActiveFilters = Boolean(
+    filters.categoryId || filters.startDate || filters.endDate,
+  );
+
+  if (isLoading) {
+    return <LoadingSpinner label="Loading expenses…" />;
+  }
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-semibold text-slate-900">Expenses</h1>
+    <div>
+      <div style={{ marginBottom: '8px' }}>
+        <h1 style={layout.sectionTitle}>Expenses</h1>
+        <p style={layout.sectionHint}>
+          Use the side menu to add expenses, view your list, or manage budgets.
+        </p>
+      </div>
+      <hr style={layout.hairline} />
 
-      {loadError && <p className="text-sm text-red-600">{loadError}</p>}
+      {loadError && <p style={layout.errorText}>{loadError}</p>}
 
-      <OverspendBanner budgets={budgets} />
+      <div style={{ marginBottom: '24px' }}>
+        <OverspendBanner budgets={budgets} />
+      </div>
 
-      <section className="space-y-3">
-        <ExpenseForm
-          categories={categories}
-          initialExpense={editingExpense}
-          onSubmit={handleExpenseSubmit}
-          onCancel={() => setEditingExpense(null)}
-        />
+      <div
+        style={{
+          display: 'flex',
+          gap: '32px',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+        }}
+      >
+        {/* Side menu: text links with left marker, not boxed cards */}
+        <aside
+          style={{
+            ...layout.panel,
+            width: '200px',
+            flexShrink: 0,
+            padding: '14px',
+          }}
+        >
+          <p style={{ ...layout.label, marginBottom: '14px' }}>Menu</p>
 
-        <div className="flex flex-wrap items-end gap-3 rounded-md border border-slate-200 bg-white p-3">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="filter-category" className="text-xs font-medium text-slate-600">
-              Category
-            </label>
-            <select
-              id="filter-category"
-              value={filters.categoryId}
-              onChange={(e) => handleFilterChange({ ...filters, categoryId: e.target.value })}
-              className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
-            >
-              <option value="">All categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="filter-start" className="text-xs font-medium text-slate-600">
-              From
-            </label>
-            <input
-              id="filter-start"
-              type="date"
-              value={filters.startDate}
-              onChange={(e) => handleFilterChange({ ...filters, startDate: e.target.value })}
-              className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          <SideButton
+            label="Add Expense"
+            isActive={activeView === 'add'}
+            onClick={() => setActiveView('add')}
+          />
+          <SideButton
+            label="Expense List"
+            isActive={activeView === 'list'}
+            onClick={() => setActiveView('list')}
+          />
+          <SideButton
+            label="Budgets"
+            isActive={activeView === 'budgets'}
+            onClick={() => setActiveView('budgets')}
+          />
+        </aside>
+
+        <div style={{ flex: 1, minWidth: '280px' }}>
+          {activeView === 'add' && (
+            <ExpenseForm
+              categories={categories}
+              initialExpense={editingExpense}
+              onSubmit={handleExpenseSubmit}
+              onCancel={() => setEditingExpense(null)}
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="filter-end" className="text-xs font-medium text-slate-600">
-              To
-            </label>
-            <input
-              id="filter-end"
-              type="date"
-              value={filters.endDate}
-              onChange={(e) => handleFilterChange({ ...filters, endDate: e.target.value })}
-              className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
-            />
-          </div>
-          {(filters.categoryId || filters.startDate || filters.endDate) && (
-            <button
-              type="button"
-              onClick={() => handleFilterChange(EMPTY_FILTERS)}
-              className="text-sm font-medium text-slate-500 hover:text-slate-900"
-            >
-              Clear filters
-            </button>
+          )}
+
+          {activeView === 'list' && (
+            <div>
+              <div
+                style={{
+                  ...layout.panel,
+                  maxWidth: '800px',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '16px',
+                  alignItems: 'flex-end',
+                  marginBottom: '16px',
+                }}
+              >
+                <p
+                  style={{
+                    ...layout.label,
+                    width: '100%',
+                    marginBottom: '0',
+                  }}
+                >
+                  Filter expenses
+                </p>
+                <div style={{ minWidth: '140px', flex: 1 }}>
+                  <label htmlFor="filter-category" style={layout.label}>
+                    Category
+                  </label>
+                  <select
+                    id="filter-category"
+                    value={filters.categoryId}
+                    onChange={(e) =>
+                      handleFilterChange({ ...filters, categoryId: e.target.value })
+                    }
+                    style={fieldStyle}
+                  >
+                    <option value="">All categories</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ minWidth: '140px', flex: 1 }}>
+                  <label htmlFor="filter-start" style={layout.label}>
+                    From
+                  </label>
+                  <input
+                    id="filter-start"
+                    type="date"
+                    value={filters.startDate}
+                    onChange={(e) =>
+                      handleFilterChange({ ...filters, startDate: e.target.value })
+                    }
+                    style={fieldStyle}
+                  />
+                </div>
+
+                <div style={{ minWidth: '140px', flex: 1 }}>
+                  <label htmlFor="filter-end" style={layout.label}>
+                    To
+                  </label>
+                  <input
+                    id="filter-end"
+                    type="date"
+                    value={filters.endDate}
+                    onChange={(e) =>
+                      handleFilterChange({ ...filters, endDate: e.target.value })
+                    }
+                    style={fieldStyle}
+                  />
+                </div>
+
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={() => handleFilterChange(EMPTY_FILTERS)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '10px 0',
+                      color: colors.teal,
+                      fontWeight: '700',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+
+              <ExpenseList
+                expenses={expenses}
+                categories={categories}
+                onEdit={handleEditExpense}
+                onDelete={handleExpenseDelete}
+              />
+            </div>
+          )}
+
+          {activeView === 'budgets' && (
+            <div>
+              <BudgetForm
+                categories={categories}
+                initialBudget={editingBudget}
+                onSubmit={handleBudgetSubmit}
+                onCancel={() => setEditingBudget(null)}
+              />
+              <div style={{ height: '28px' }} />
+              <p style={{ ...layout.label, marginBottom: '4px' }}>Your budgets</p>
+              <BudgetList
+                budgets={budgets}
+                onEdit={handleEditBudget}
+                onDelete={handleBudgetDelete}
+              />
+            </div>
           )}
         </div>
-
-        <ExpenseList expenses={expenses} categories={categories} onEdit={setEditingExpense} onDelete={handleExpenseDelete} />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold text-slate-900">Budgets</h2>
-        <BudgetForm
-          categories={categories}
-          initialBudget={editingBudget}
-          onSubmit={handleBudgetSubmit}
-          onCancel={() => setEditingBudget(null)}
-        />
-        <BudgetList budgets={budgets} onEdit={setEditingBudget} onDelete={handleBudgetDelete} />
-      </section>
+      </div>
     </div>
+  );
+}
+
+function SideButton({ label, isActive, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        width: '100%',
+        textAlign: 'left',
+        marginBottom: '4px',
+        padding: '10px 0 10px 12px',
+        border: 'none',
+        borderLeft: isActive ? `3px solid ${colors.teal}` : '3px solid transparent',
+        backgroundColor: isActive ? colors.tealSoft : 'transparent',
+        color: isActive ? colors.tealDark : colors.muted,
+        fontWeight: isActive ? '700' : '500',
+        fontSize: '14px',
+        cursor: 'pointer',
+      }}
+    >
+      {label}
+    </button>
   );
 }

@@ -1,41 +1,136 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../utils/constants';
+import { colors } from '../../theme';
+import logo from '../../public/logo.png';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  function linkClass(path) {
-    return `text-sm font-medium ${
-      location.pathname === path ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900'
-    }`;
-  }
-
   function handleLogout() {
     logout();
     navigate(ROUTES.LOGIN, { replace: true });
   }
 
+  function getNavButtonStyle(path) {
+    const isActive = location.pathname === path || location.pathname.startsWith(path + '/');
+
+    if (isActive) {
+      return {
+        backgroundColor: colors.tealDark,
+        color: colors.white,
+        border: 'none',
+        borderRadius: '8px',
+        padding: '8px 14px',
+        fontSize: '14px',
+        fontWeight: '700',
+        textDecoration: 'none',
+        display: 'inline-block',
+      };
+    }
+
+    return {
+      backgroundColor: colors.tealSoft,
+      color: colors.tealDark,
+      border: 'none',
+      borderRadius: '8px',
+      padding: '8px 14px',
+      fontSize: '14px',
+      fontWeight: '600',
+      textDecoration: 'none',
+      display: 'inline-block',
+    };
+  }
+
   return (
-    <nav className="border-b px-4 py-3">
-      <div className="container mx-auto flex items-center justify-between">
-        <div className="flex gap-4">
-          <Link to={ROUTES.DASHBOARD} className={linkClass(ROUTES.DASHBOARD)}>
+    <header
+      style={{
+        backgroundColor: '#449763',
+        padding: '12px 16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+      }}
+    >
+      <nav
+        style={{
+          maxWidth: '1100px',
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: '1fr auto 1fr',
+          alignItems: 'center',
+          gap: '16px',
+        }}
+      >
+        {/* Left: logo + brand name */}
+        <Link
+          to={ROUTES.DASHBOARD}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            color: colors.white,
+            fontSize: '20px',
+            fontWeight: '700',
+            textDecoration: 'none',
+            justifySelf: 'start',
+          }}
+        >
+          <img
+            src={logo}
+            alt="ExpenseTracker logo"
+            style={{
+              width: '47px',
+              height: '47px',
+              borderRadius: '50%',
+              display: 'block',
+              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.35)',
+            }}
+          />
+          ExpenseTracker
+        </Link>
+
+        {/* Center: Dashboard + Expenses */}
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+          <Link to={ROUTES.DASHBOARD} style={getNavButtonStyle(ROUTES.DASHBOARD)}>
             Dashboard
           </Link>
-          <Link to={ROUTES.EXPENSES} className={linkClass(ROUTES.EXPENSES)}>
+          <Link to={ROUTES.EXPENSES} style={getNavButtonStyle(ROUTES.EXPENSES)}>
             Expenses
           </Link>
         </div>
-        <div className="flex items-center gap-4">
-          {user && <span className="text-sm text-slate-600">{user.email}</span>}
-          <button onClick={handleLogout} className="text-sm font-medium text-slate-500 hover:text-slate-900">
+
+        {/* Right: email + logout */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            justifySelf: 'end',
+            flexWrap: 'wrap',
+          }}
+        >
+          {user && (
+            <span style={{ color: colors.tealSoft, fontSize: '13px' }}>{user.email}</span>
+          )}
+          <button
+            type="button"
+            onClick={handleLogout}
+            style={{
+              backgroundColor: colors.amberSoft,
+              color: colors.amber,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 14px',
+              fontSize: '14px',
+              fontWeight: '700',
+              cursor: 'pointer',
+            }}
+          >
             Log out
           </button>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }

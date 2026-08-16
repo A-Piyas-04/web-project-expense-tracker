@@ -8,6 +8,8 @@ import Button from '../components/common/Button';
 import { analyticsApi } from '../api/analytics';
 import { budgetsApi } from '../api/budgets';
 import { useAuth } from '../hooks/useAuth';
+import { formatCurrency } from '../utils/formatters';
+import { colors, layout } from '../theme';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -27,8 +29,19 @@ export default function DashboardPage() {
           analyticsApi.getByMonth(),
           budgetsApi.getAll(),
         ]);
-        setCategoryTotals(byCategory.map((row) => ({ ...row, total: Number(row.total) })));
-        setMonthTotals(byMonth.map((row) => ({ ...row, total: Number(row.total) })));
+
+        setCategoryTotals(
+          byCategory.map((row) => ({
+            ...row,
+            total: Number(row.total),
+          })),
+        );
+        setMonthTotals(
+          byMonth.map((row) => ({
+            ...row,
+            total: Number(row.total),
+          })),
+        );
         setBudgets(budgetData);
       } catch {
         setLoadError('Could not load your analytics. Try refreshing the page.');
@@ -36,12 +49,14 @@ export default function DashboardPage() {
         setIsLoading(false);
       }
     }
+
     load();
   }, []);
 
   async function handleExport() {
     setIsExporting(true);
     setExportError('');
+
     try {
       await analyticsApi.exportCsv();
     } catch {
@@ -51,27 +66,131 @@ export default function DashboardPage() {
     }
   }
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) {
+    return <LoadingSpinner label="Loading your dashboard…" />;
+  }
+
+  let totalSpent = 0;
+  for (const row of categoryTotals) {
+    totalSpent += row.total;
+  }
+
+  const overBudgetCount = budgets.filter((budget) => budget.is_over_budget).length;
+  const greetingName = user?.email ? user.email.split('@')[0] : '';
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-slate-900">Welcome{user ? `, ${user.email}` : ''}</h1>
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          gap: '16px',
+          flexWrap: 'wrap',
+          marginBottom: '8px',
+        }}
+      >
+        <div>
+          <h1 style={layout.sectionTitle}>
+            {greetingName ? `Hi, ${greetingName}` : 'Dashboard'}
+          </h1>
+          <p style={layout.sectionHint}>A quick look at where your money is going.</p>
+        </div>
+
         <Button type="button" variant="secondary" onClick={handleExport} disabled={isExporting}>
           {isExporting ? 'Exporting…' : 'Export CSV'}
         </Button>
       </div>
 
-      {loadError && <p className="text-sm text-red-600">{loadError}</p>}
-      {exportError && <p className="text-sm text-red-600">{exportError}</p>}
+      <hr style={layout.hairline} />
 
-      <OverspendBanner budgets={budgets} />
+      {loadError && <p style={layout.errorText}>{loadError}</p>}
+      {exportError && <p style={layout.errorText}>{exportError}</p>}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div style={{ marginBottom: '28px' }}>
+        <OverspendBanner budgets={budgets} />
+      </div>
+
+      {/* Metrics: green outlined strip */}
+      <div
+        style={{
+          ...layout.panelStrong,
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: '0',
+          marginBottom: '24px',
+          padding: '8px 18px',
+        }}
+      >
+        <MetricBlock
+          label="Total spent"
+          value={formatCurrency(totalSpent)}
+          emphasis="primary"
+          showDivider
+        />
+        <MetricBlock
+          label="Categories used"
+          value={String(categoryTotals.length)}
+          emphasis="secondary"
+          showDivider
+        />
+        <MetricBlock
+          label="Budgets over limit"
+          value={String(overBudgetCount)}
+          emphasis={overBudgetCount > 0 ? 'alert' : 'secondary'}
+          showDivider={false}
+        />
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '16px',
+          marginBottom: '16px',
+        }}
+      >
         <CategoryPieChart data={categoryTotals} />
         <CategoryBarChart data={categoryTotals} />
       </div>
+
       <MonthlyLineChart data={monthTotals} />
+    </div>
+  );
+}
+
+function MetricBlock({ label, value, emphasis, showDivider }) {
+  let valueColor = colors.text;
+  let valueSize = '28px';
+
+  if (emphasis === 'primary') {
+    valueColor = colors.tealDark;
+    valueSize = '34px';
+  } else if (emphasis === 'alert') {
+    valueColor = colors.red;
+  }
+
+  return (
+    <div
+      style={{
+        padding: '20px 18px 22px 0',
+        marginRight: showDivider ? '18px' : '0',
+        borderRight: showDivider ? `1.5px solid ${colors.tealLine}` : 'none',
+      }}
+    >
+      <p style={{ ...layout.label, marginBottom: '10px' }}>{label}</p>
+      <p
+        style={{
+          margin: 0,
+          fontSize: valueSize,
+          fontWeight: '700',
+          color: valueColor,
+          letterSpacing: '-0.03em',
+          lineHeight: 1.1,
+        }}
+      >
+        {value}
+      </p>
     </div>
   );
 }

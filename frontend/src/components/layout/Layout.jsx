@@ -1,11 +1,18 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
+import { colors } from '../../theme';
 
 export default function Layout() {
   return (
-    <div className="min-h-screen">
+    <div style={{ minHeight: '100vh', backgroundColor: colors.page }}>
       <Navbar />
-      <main className="container mx-auto px-4 py-6">
+      <main
+        style={{
+          maxWidth: '1100px',
+          margin: '0 auto',
+          padding: '24px 16px',
+        }}
+      >
         <Outlet />
       </main>
     </div>
